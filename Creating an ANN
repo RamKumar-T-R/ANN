@@ -1,0 +1,136 @@
+# Classification template
+# Part -1: Data Preprocessing
+# Importing the libraries
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Importing the dataset
+dataset = pd.read_csv('D:\Deep-Learning_course\Deep-Learning-training-data-set_by_superdatascience.com\Deep_Learning_A_Z\Volume 1 - Supervised Deep Learning\Part 1 - Artificial Neural Networks (ANN)\Section 4 - Building an ANN\Churn_Modelling.csv')
+X = dataset.iloc[:, 3:13].values
+y = dataset.iloc[:, 13].values
+
+
+# Encoding categorical data
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+labelencoder_X_1 = LabelEncoder()
+X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2])
+
+#the actual code
+# url = 'https://stackoverflow.com/questions/54345667/onehotencoder-categorical-features-deprecated-how-to-transform-specific-column'
+'''labelencoder_X_2 = LabelEncoder()
+X[:, 1] = labelencoder_X_2.fit_transform(X[:, 1])
+onehotencoder = OneHotEncoder(categorical_features = [1])
+X = onehotencoder.fit_transform(X).toarray()'''
+
+#the alternative code
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import make_column_transformer
+A = make_column_transformer(
+    (OneHotEncoder(categories='auto'), [1]), 
+    remainder="passthrough")
+X = A.fit_transform(X)
+X = X[:, 1:]
+
+
+# Splitting the dataset into the Training set and Test set
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0)
+
+# Feature Scaling
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+# Part-2: Making an ANN
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+# Preventing overfeeding in ANN we use Dropout() method
+from keras.layers import Dropout
+
+# Initializing ANN
+classifier = Sequential()
+
+
+# Adding input layer and the first hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11)) #input_dim=11, because we have 11 indipendnent columns  # 'acitvation' is activation function  # 'relu' is keyword for rectifier activation function  # 'units' is the no. of nodes in the layer # 'input_dim' is mandatory for first hidden(input Layer) and not mandatory for next consequitive layers
+classifier.add(Dropout(rate = 0.1)) # to avoid overfeeding we disable (10/100) noumber of nodes in ANN
+
+# Adding second hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.1))
+
+# Adding third hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding fourth hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding fifth hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding sixth hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding seventh hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding eighth hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding ninth hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding tenth hidden layer
+classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+classifier.add(Dropout(rate = 0.4))
+
+# Adding output layer
+classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid')) # activation function is not rectifier, instead we use sigmoid for probabiliy based functions # Here we will get only 2 categories(0, 1), when dealing with two of more categories we use the activation = 'softmax'
+
+
+# Compiling / appy stochastic gradient method to our ANN
+classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy']) # 'optimizer' is the algorithm that we are going to use to develope the weights of each nodes(axioms), here we use stochastic gradient algorithm, in stochastic gradient algorithm we have many algorithm in which we are using 'adam' for our purpose
+
+
+# Fitting classifier to the Training set
+classifier.fit(X_train, y_train, batch_size = 10, epochs = 100) # '' is the size of batch after which the weights are get updated   # '' is the number of epoch
+ 
+# Predicting the Test set results
+y_pred = classifier.predict(X_train)
+y_pred = (y_pred > 0.5) # To take away only the two categories 0 or 1
+
+
+'''Use our ANN model to predict if the customer with the following informations will leave the bank:
+
+Geography: France
+Credit Score: 600
+Gender: Male
+Age: 40 years old
+Tenure: 3 years
+Balance: $60000
+Number of Products: 2
+Does this customer have a credit card? Yes
+Is this customer an Active Member: Yes
+Estimated Salary: $50000
+So should we say goodbye to that customer?'''
+hw_prediction = classifier.predict(sc.transform(np.array([[0.0, 0.0, 600, 1, 40, 3, 60000, 2, 1, 1, 50000]])))
+hw_prediction = (hw_prediction>0.5)
+
+# Making the Confusion Matrix
+# This is used to evaluate the model ANN by checking the actual value in the y_test and the result we got from ANN
+from sklearn.metrics import confusion_matrix
+cm = confusion_matrix(y_test, y_pred)
+
+# from cm Array cm[0][0] + cm[1][1] = correct prediction and cm[0][1] = cm[1][0] is the incorrect prediction
+
